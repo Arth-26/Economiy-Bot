@@ -1,0 +1,1 @@
+Criar ENUM de Tipo de compra (FIXA, VARIÁVEL)   FEITO

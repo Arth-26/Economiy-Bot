@@ -1,0 +1,48 @@
+services:
+ waha:
+  image: 
+    devlikeapro/waha:latest
+  container_name: 
+    waha-container
+  restart: 
+    always
+  ports:
+    - '3000:3000'
+ db:
+  image: 
+    postgres
+  restart: always
+  volumes:
+      - ./data/db:/var/lib/postgres
+  environment:
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  ports:
+    - "5432:5432"
+
+ api:
+  build:
+    context: .
+    dockerfile: Dockerfile
+  volumes:
+      - ./code:/app
+  container_name: api-container
+  restart: 
+    always
+  environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  depends_on:
+    - waha
+    - db
+  ports:
+    - '5000:5000'
+  command:
+    python3 app/app.py
+
+ 
+  
