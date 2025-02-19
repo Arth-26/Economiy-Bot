@@ -13,11 +13,12 @@ class DataBase:
     def execute_script(self, sql):
         try:
             cur = self.__con.cursor()
-            cur=self._db.cursor()
             cur.execute(sql)
             cur.close();
-            self._db.commit()
-        except:
+            self.__con.commit()
+        except Exception as e:
+            print('ERRO AO EXECUTAR SCRIPT')
+            print(e)
             return False;
         return True;
 
@@ -27,7 +28,9 @@ class DataBase:
             cur=self.__con.cursor()
             cur.execute(sql)
             rs=cur.fetchall();
-        except:
+        except Exception as e:
+            print('ERRO AO EXECUTAR QUERY')
+            print(e)
             return None
         return rs
 

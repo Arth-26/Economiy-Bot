@@ -95,7 +95,7 @@ class WahaBot:
     def send_message(self, chatId, message):
 
         message_length = len(message)
-        sleep_time = 1.5 if message_length < 20 else 2 if message_length < 50 else 3
+        sleep_time = 1 if message_length < 50 else 2
         time.sleep(sleep_time)
 
         url = f'{self.__url}/api/sendText'
