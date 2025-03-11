@@ -93,6 +93,8 @@ Usuários podem querer consultar transações de um dia específico.
 "O que comprei no final de semana passado?"
 "Quero ver as despesas que fiz na última sexta-feira."
 
+
+ -- FUTURAMENTE 
 9️⃣ Consultas de Transações Futuras ou Pendentes
 Usuários podem querer saber sobre lançamentos programados.
 
@@ -102,3 +104,10 @@ Usuários podem querer saber sobre lançamentos programados.
 "Quais são as próximas cobranças do meu cartão de crédito?"
 "Quero ver todos os boletos que ainda não paguei."
 "Quanto tenho de contas para vencer nos próximos dias?"
+
+
+
+
+
+
+

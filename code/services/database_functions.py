@@ -19,6 +19,7 @@ class DataBase:
         except Exception as e:
             print('ERRO AO EXECUTAR SCRIPT')
             print(e)
+            self.fechar()
             return False;
         return True;
 
@@ -31,6 +32,7 @@ class DataBase:
         except Exception as e:
             print('ERRO AO EXECUTAR QUERY')
             print(e)
+            self.fechar()
             return None
         return rs
 

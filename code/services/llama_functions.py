@@ -1,12 +1,16 @@
 import os
-from datetime import date
+import re
+from datetime import date, datetime
 
 from decouple import config
 from groq import Groq
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_groq import ChatGroq
-from services.waha_bot import WahaBot
+
+from .bot_functions import BotClass
+from .database_functions import DataBase
+from .waha import WahaBot
 
 os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY')
 
@@ -14,6 +18,8 @@ class LlamaClass:
 
     def __init__(self):
         self.waha = WahaBot()
+        self.db = DataBase()
+        self.api = BotClass()
         self.__client = ChatGroq(model='llama-3.3-70b-versatile')
 
     
@@ -64,31 +70,31 @@ class LlamaClass:
 
                                     **Retorne APENAS a string correspondente (QUERY_FUNCTION, FIN_FUNCTION ou NOT_FUNCTION), sem nenhuma explicação adicional.**'''
 
-            prompt = PromptTemplate(
-                input_variables=['system_prompt', 'texto'],
-                template='''
-                    <system_prompt>
+            chain = (
+                PromptTemplate.from_template(
+                    '''
                         {system_prompt}
-                    </system_prompt>
-                    <texto>
+
+                        A mensagem do usuário é:
+                        
                         {texto}
-                    </texto>
-                '''
+                    '''
+                ) 
+                | client 
+                | StrOutputParser()
             )
-            chain = prompt | self.__client | StrOutputParser()
+            
             response = chain.invoke({
                 'system_prompt': system_instruction,
                 'texto': text,
             })
-
-            print(response)
             
             funcao = response
             match funcao:
                 case 'NOT_FUNCTION':
-                    self.mensagem_exemplo(chatId)
+                    self.funcao_nao_identificada(chatId)
                 case 'FIN_FUNCTION':
-                    self.cadastrar_entrada(chatId, text)
+                    self.gerar_mensagem_cadastro(chatId, text)
                 case 418:
                     return "I'm a teapot"
 
@@ -97,36 +103,36 @@ class LlamaClass:
             print('Deu ruim')
             print(e)
 
-    def mensagem_exemplo(self, chatId):
+    def funcao_nao_identificada(self, chatId):
         waha = self.waha
         mensagem = '''Hmm... Não consegui entender se você quer consultar seu extrato ou registrar uma nova transação. 🤔
 
-    Se quiser consultar seus gastos ou receitas passadas, tente algo como:
-    ➡️ "Quanto gastei este mês?"
-    ➡️ "Me mostre meu extrato da semana passada."
+        Se quiser consultar seus gastos ou receitas passadas, tente algo como:
+        ➡️ "Quanto gastei este mês?"
+        ➡️ "Me mostre meu extrato da semana passada."
 
-    Se quiser registrar um novo gasto ou receita, tente algo como:
-    ✅ "Gastei 50 reais no mercado."
-    ✅ "Recebi 200 reais do meu cliente."
+        Se quiser registrar um novo gasto ou receita, tente algo como:
+        ✅ "Gastei 50 reais no mercado."
+        ✅ "Recebi 200 reais do meu cliente."
 
-    Me envie a mensagem novamente de forma mais clara, e eu te ajudo! 🚀'''
+        Me envie a mensagem novamente de forma mais clara, e eu te ajudo! 🚀'''
         
         waha.send_message(chatId, mensagem)
 
-    def cadastrar_entrada(self, chatId, text):
+    def gerar_mensagem_cadastro(self, chatId, text):
         client = self.__client
-        waha = self.waha
+        api = self.api
         hoje = date.today()
         try:
             system_instruction = f'''Você é um assistente financeiro que registra transações com base na mensagem do usuário. Identifique se é um gasto (🟥 Despesa) ou um ganho (🟩 Receita) e extraia os dados seguindo este formato:
 
             📋 Resumo da Transação
             ───────────────────
-            🔖 Descrição: [Motivo ou item] (se ausente, "Não definido")
+            💲 Produto: [Item] (se ausente, "Não definido")
+            🔖 Descrição: [Motivo] (se ausente, "Não definido")
             💰 Valor: R$ [Montante] (obrigatório, solicite se ausente)
             🔄 Tipo: [🟥 Despesa | 🟩 Receita] (obrigatório, solicite se ausente)
             📂 Categoria: [Tipo de gasto/ganho] (se não conseguir identificar a categoria, "Não definido")
-            🏦 Conta: [Origem/destino] (se ausente, "Conta pessoal")
             💳 Pagamento: [Pix, débito, crédito, etc.] (se ausente, "Dinheiro")
             🗓️ Data: [DD/MM/AAAA] (se "ontem" ou "há X dias", converter; se ausente, usar {hoje})
 
@@ -136,30 +142,29 @@ class LlamaClass:
 
             Se não for possível identificar se foi um gasto ou um ganho, responda exatamente: "Desculpe, não consegui identificar se foi um gasto ou um ganho. Por favor! Seja explicito na sua mensagem para que eu possa processar as informações corretamente"'''
 
-            prompt = PromptTemplate(
-                input_variables=['system_prompt', 'texto'],
-                template='''
-                    <system_prompt>
+            chain = (
+                PromptTemplate.from_template(
+                    '''
                         {system_prompt}
-                    </system_prompt>
-                    <texto>
+
+                        A mensagem do usuário é:
+                        
                         {texto}
-                    </texto>
-                '''
+                    '''
+                ) 
+                | client 
+                | StrOutputParser()
             )
-            chain = prompt | self.__client | StrOutputParser()
             response = chain.invoke({
                 'system_prompt': system_instruction,
                 'texto': text,
             })
             
-            waha.send_message(chatId, response)
-
+            api.captura_dados_mensagem(chatId, response)
+            
         except Exception as e:
-            print('Deu ruim')
+            print('ERRO NO PROCESSO DE GERAÇÃO DE MENSAGEM DE CADASTRO DA ENTRADA DO USUÁRIO')
             print(e)
 
-
-
-
+    
 

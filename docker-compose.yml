@@ -7,7 +7,7 @@ services:
   restart: 
     always
   ports:
-    - '3000:3000'
+    - '30036:30036'
  db:
   image: 
     postgres
