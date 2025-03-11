@@ -2,8 +2,8 @@ import re
 import time
 
 from flask import Flask, jsonify, request
+from models.usuarios import Usuarios
 from services.bot_functions import BotClass
-from services.database_functions import DataBase
 from services.llama_functions import LlamaClass
 from services.waha import WahaBot
 from utils import filtrar_digits, verificar_tipo_mensagem_recebida
@@ -13,6 +13,7 @@ app = Flask(__name__)
 waha = WahaBot()
 api_class = BotClass()
 ai_bot = LlamaClass()
+usuario = Usuarios()
 
 conversation_state = api_class.get_conversation_state
 
@@ -31,13 +32,13 @@ def webhook():
                 message_content = data['payload']['body']
                 #LEMBRAR DE TIRAR ESSA VERIFICAÇÃO
                 if numero_telefone == '558398305769' or numero_telefone == '558399109114':
-                    if api_class.verificar_usuario(numero_telefone):
+                    if usuario.verificar_usuario(numero_telefone):
                         ai_bot.identificar_função(chat_id, message_content)
                     else:
                         state = api_class.define_status(chat_id)
                         if state == 'cadastro':
                             if re.findall('Cadastro Economy Bot', message_content, re.IGNORECASE):
-                                api_class.inserir_proximo_campo(message_content, chat_id, numero_telefone)
+                                usuario.cadastrar_usuario(message_content, chat_id, numero_telefone)
                             else:
                                 waha.send_message(chat_id, 'Mensagem de cadastro inválida! Por favor, responda o formulário para se cadastrar')
                         else:
