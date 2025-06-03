@@ -1,18 +1,26 @@
+import json
 import os
-import re
-from datetime import date, datetime
+import tempfile
+from collections import defaultdict
+from datetime import date
+from decimal import Decimal
 
+import pandas as pd
 from decouple import config
-from groq import Groq
+from langchain.schema import Document
+from langchain_community.vectorstores import FAISS
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_groq import ChatGroq
+from langchain_huggingface import HuggingFaceEmbeddings
+from utils import filtrar_digitos, formatar_valor_brasileiro
 
 from .bot_functions import BotClass
 from .database_functions import DataBase
 from .waha import WahaBot
 
 os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY')
+
 
 class LlamaClass:
 
@@ -22,7 +30,14 @@ class LlamaClass:
         self.api = BotClass()
         self.__client = ChatGroq(model='llama-3.3-70b-versatile')
 
-    
+    def load_scripts(self, file_path):
+        try:
+            with open(file_path, 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            print('Arquivo não encontrado')
+            return {}
+
     def identificar_função(self, chatId, text):
         client = self.__client
 
@@ -95,8 +110,8 @@ class LlamaClass:
                     self.funcao_nao_identificada(chatId)
                 case 'FIN_FUNCTION':
                     self.gerar_mensagem_cadastro(chatId, text)
-                case 418:
-                    return "I'm a teapot"
+                case 'QUERY_FUNCTION':
+                    self.mostra_resultados_consulta_usuario(chatId, text)
 
 
         except Exception as e:
@@ -130,9 +145,9 @@ class LlamaClass:
             ───────────────────
             💲 Produto: [Item] (se ausente, "Não definido")
             🔖 Descrição: [Motivo] (se ausente, "Não definido")
-            💰 Valor: R$ [Montante] (obrigatório, solicite se ausente)
+            💰 Valor: R$ [Montante] (obrigatório, solicite se ausente) (SISTEMA MONETÁRIO BRASILEIRO)
             🔄 Tipo: [🟥 Despesa | 🟩 Receita] (obrigatório, solicite se ausente)
-            📂 Categoria: [Tipo de gasto/ganho] (se não conseguir identificar a categoria, "Não definido")
+            📂 Categoria: [ALIMENTAÇÃO, LAZER, IMÓVEL, ELETRÔNICOS, VEICULOS, GASTOS BÁSICOS, OUTROS] (se não conseguir identificar a categoria, "Não definido")
             💳 Pagamento: [Pix, débito, crédito, etc.] (se ausente, "Dinheiro")
             🗓️ Data: [DD/MM/AAAA] (se "ontem" ou "há X dias", converter; se ausente, usar {hoje})
 
@@ -140,7 +155,24 @@ class LlamaClass:
 
             Se a transação for registrada, confirme com uma mensagem amigável e um toque de humor sobre o gasto.
 
-            Se não for possível identificar se foi um gasto ou um ganho, responda exatamente: "Desculpe, não consegui identificar se foi um gasto ou um ganho. Por favor! Seja explicito na sua mensagem para que eu possa processar as informações corretamente"'''
+            Se não for possível identificar se foi um gasto ou um ganho, responda exatamente: "Desculpe, não consegui identificar se foi um gasto ou um ganho. Por favor! Seja explicito na sua mensagem para que eu possa processar as informações corretamente
+            
+            EXEMPLOS DE RESPOSTAS:
+
+            Usuário: "Paguei R$ 129,90 no cartão para recarregar meu celular"
+            Resposta:
+            ✅ Tim-tim pro seu saldo! 
+            📋 Resumo da Transação
+            ───────────────────
+            💲 Produto: Recarga celular
+            🔖 Descrição: Não definido
+            💰 Valor: R$ 129.90
+            🔄 Tipo: 🟥 Despesa
+            📂 Categoria: Outros
+            💳 Pagamento: Crédito
+            🗓️ Data: 15/07/2024
+
+            "Recarga vitalícia? Espero que tenha crédito até pro ano que vem! 😉"'''
 
             chain = (
                 PromptTemplate.from_template(
@@ -166,5 +198,85 @@ class LlamaClass:
             print('ERRO NO PROCESSO DE GERAÇÃO DE MENSAGEM DE CADASTRO DA ENTRADA DO USUÁRIO')
             print(e)
 
-    
+    def selecionar_query_por_similaridade(self, text):
+        arquivo = "../project_files/scripts/scripts.json"
+        with open(arquivo, 'r', encoding='utf-8') as f:
+            consultas = json.load(f)
+        
+        documentos = []
+        for consulta, infos in consultas.items():
+            query = infos.get('query')
+            exemplos = infos.get('examples')
 
+            for tipo, perguntas in exemplos.items():
+                for pergunta in perguntas:
+                    doc = Document(
+                            page_content=pergunta,
+                            metadata = {
+                                "consulta": consulta,
+                                "tipo": tipo,
+                                "query": query
+                            }      
+                        )  
+                    documentos.append(doc) 
+
+        embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+        banco_vetores = FAISS.from_documents(documentos, embedding_model)
+
+        resultados = banco_vetores.similarity_search(text, k=1)
+
+        if not resultados:
+            return 'Nada encontrado'
+        
+        resultado = resultados[0]
+        metadata = resultado.metadata
+
+        return {
+            "tipo": metadata["tipo"],
+            "query": metadata["query"]
+        }
+    
+    def processar_consulta_do_usuario(self, chatId, text):
+        resultado_consulta = self.selecionar_query_por_similaridade(text)
+
+        numero_telefone = filtrar_digitos(chatId)
+        tipo = resultado_consulta.get('tipo')
+
+        query = resultado_consulta.get('query')
+        params = (f'{numero_telefone}', tipo)
+        
+        resultados = self.db.execute_query(query, params)
+
+        return resultados
+    
+    def mostra_resultados_consulta_usuario(self, chatId, text):
+        resultados = self.processar_consulta_do_usuario(chatId, text)
+        if len(resultados) < 1:
+            message = '''Você não possui nenhum registro no período informado!
+            
+            Você pode cadastrar novos registros nos enviando uma mensagem do tipo
+            "GASTEI 20 REAIS COM ALIMENTAÇÃO",
+            "RECEBI 50 REAIS COM SERVIÇOS EXTRAS"
+            
+            Nós iremos armazenar essas informações e te retornar sempre que você precisar 😊'''
+        else:
+            resultados_por_categoria = defaultdict(lambda: {"itens": [], "total": Decimal('0.00')})
+
+            for item in resultados:
+                categoria = item[1]
+                valor = item[3]
+                resultados_por_categoria[categoria]["itens"].append(item)
+                resultados_por_categoria[categoria]["total"] += valor
+
+            valor_total_consulta = sum(info["total"] for info in resultados_por_categoria.values())
+            message = f'''Você possui {len(resultados)} registros no período consultado com um valor total de R$ {formatar_valor_brasileiro(valor_total_consulta)}'''
+
+            for categoria, info in resultados_por_categoria.items():
+                message += f'\n\n💲{categoria.upper()}: R$ {formatar_valor_brasileiro(info["total"])}'
+                for item in info["itens"]:
+                    produto = item[0]
+                    data = item[2].strftime('%d/%m/%Y')
+                    valor = item[3]
+                    forma_pagamento = item[4]
+                    message += f'\n- {data}: {produto} - R$ {formatar_valor_brasileiro(valor)} ({forma_pagamento})'

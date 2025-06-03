@@ -24,7 +24,7 @@ class WahaBot:
 
         for i in range(10):
             try:
-                response = requests.get(waha_url)
+                response = requests.get(waha_url, timeout=10)
                 if response.status_code == 200:
                     print("✅ WAHA está pronto!")
                     return True
@@ -39,7 +39,7 @@ class WahaBot:
         waha_start_url = f'{self.__url}/api/sessions/default/start'
 
         try:
-            response = requests.post(waha_start_url)
+            response = requests.post(waha_start_url, timeout=10)
             
             if response.status_code in [200, 201]:
                 print("Webhook registrado com sucesso!")
@@ -77,8 +77,8 @@ class WahaBot:
         }
 
         try:
-            response = requests.post(waha_stop_url)
-            response = requests.put(waha_put_url, json=params)
+            response = requests.post(waha_stop_url, timeout=10)
+            response = requests.put(waha_put_url, json=params, timeout=10)
 
             if response.status_code == 200:
                 print("Webhooks atualizados com sucesso!")
@@ -112,7 +112,6 @@ class WahaBot:
         requests.post(
             url= url,
             json= payload,
-            headers= headers
+            headers= headers,
+            timeout=10
         )
-
-    

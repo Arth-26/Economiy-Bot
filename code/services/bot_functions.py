@@ -1,8 +1,9 @@
 import re
-from utils import filtrar_digits
+
+from models.extratos import Extratos
+from utils import filtrar_digitos
 
 from .waha import WahaBot
-from models.extratos import Extratos
 
 waha = WahaBot()
 extrato = Extratos()
@@ -32,7 +33,7 @@ class BotClass:
 
     def define_proxima_mensagem(self, state, chatId, message_content):
         if state == 'start':
-            message = '''Olá, bem vindo ao Economy Bot!\n Você ainda não possui uma conta!\n\n Deseja cadastrar-se no nosso sistema de controle financeiro?\n\n\t 1- Sim\n\t 2- Não'''
+            message = '''Olá, bem vindo ao Economy Bot!\nVocê ainda não possui uma conta!\n\nDeseja cadastrar-se no nosso sistema de controle financeiro?\n\n\t 1- Sim\n\t 2- Não'''
             self.define_status(chatId, 'first_answer')
         elif state == 'first_answer':
             respostas_sim = {"1", "sim", "Sim", "SIM", "s", "S"}
@@ -53,17 +54,21 @@ class BotClass:
 
     def captura_dados_mensagem(self, chatId, mensagem):
         dados = self.parse_entrada_data(mensagem)
-        numero_telefone = filtrar_digits(chatId)
+        numero_telefone = filtrar_digitos(chatId)
+
+        if type(dados) == str:
+            waha.send_message(chatId, dados)
+            raise Exception("Erro ao capturar dados da mensagem do usuário")
 
         try:
             _, mes, ano = dados['data'].split("/")
 
             if extrato.verifica_extrato_existe(numero_telefone, mes, ano):
-                if extrato.cadastra_entrada(dados, numero_telefone, mes, ano):
+                if extrato.cadastra_entrada(dados, mes, ano, chatId):
                     waha.send_message(chatId, mensagem)
             else:
                 extrato.cria_extrato_usuario(numero_telefone, mes, ano)
-                if extrato.cadastra_entrada(dados, numero_telefone, mes, ano):
+                if extrato.cadastra_entrada(dados, mes, ano, chatId):
                     waha.send_message(chatId, mensagem)
 
 
@@ -72,7 +77,7 @@ class BotClass:
             print(e)
 
  
-    def parse_entrada_data(entrada):
+    def parse_entrada_data(self, entrada):
         try:
             padrao = re.compile(
                 r"💲 Produto: (.+)\n"
@@ -85,18 +90,39 @@ class BotClass:
             )
 
             match = padrao.search(entrada)
+            if not match:
+                raise Exception("Formato da mensagem inválido. Verifique os campos e tente novamente.")
+
+            if not match.group(3) or not match.group(4):
+                raise ValueError("Ocorreu um erro ao cadastrar seu registro!\nCertifique-se de informar o valor e o tipo de registro (RECEITA OU DESPESA) antes de nos enviar.")
         
             dados = {
                 "produto" : match.group(1).upper(),
                 "descricao": match.group(2).upper(),
-                "valor": match.group(3).replace(',', '.'),
+                "valor": match.group(3).replace('.', '').replace(',', '.'),
                 "tipo": match.group(4).upper(),
                 "categoria": match.group(5).upper(),
                 "pagamento": match.group(6).upper(),
                 "data": match.group(7),
             }
 
+            self.valida_dados(dados)
             return dados
+
+        except ValueError as ve:
+            print("Erro de validação:", ve)
+            return str(ve)
 
         except Exception as e:
             print('Falha ao capturar informações da entrada do usuário')
+            print(e)
+        
+    def valida_dados(self, dados):
+        if len(dados.get('produto')) > 100:
+            raise Exception("O campo 'produto' excede o limite de 100 caracteres.")
+        elif len(dados.get('categoria')) > 150:
+            raise Exception("O campo 'categoria' excede o limite de 150 caracteres.")
+        elif len(str(dados.get('valor'))) > 12:
+            raise ValueError("Este valor é muito alto para cadastrar no nosso sistema!\n Nosso sistema é feito apenas para controle financeiro. Para transações desse nivel, aconselhamos procurar um profissional capacitado!")
+
+        return True 

@@ -1,17 +1,21 @@
+import re
+
+from services.bot_functions import BotClass
 from services.database_functions import DataBase
 from services.waha import WahaBot
-import re
 
 db = DataBase()
 waha = WahaBot()
+bot = BotClass()
 
 class Usuarios:
 
     def verificar_usuario(self, numero_telefone):
         try:
-            consultar_usuario = f"SELECT * FROM usuarios WHERE telefone = '{numero_telefone}'"
+            consultar_usuario = "SELECT * FROM usuarios WHERE telefone = %s"
+            params = (numero_telefone,)
 
-            if db.execute_query(consultar_usuario):
+            if db.execute_query(consultar_usuario, params):
                 return True
             else:
                 return False
@@ -21,7 +25,7 @@ class Usuarios:
 
     def cadastrar_usuario(self, formulario, chatId, numero_telefone):
         try:
-            padrao = r"\*Digite seu nome!\s*:\*\s*(.+)\n.*?sobrenome!\s*:\*\s*(.+)\n.*?gastos mensal\?\s*:\*\s*(\d+)\n.*?identificação\s*:\*\s*(\S+)"
+            padrao = r"\*Digite seu nome!\s*:\*\s*(.*?)\s*(?:\n|\r|\r\n)?\s*\*Digite seu sobrenome!\s*:\*\s*(.*?)\s*(?:\n|\r|\r\n)?\s*\*Qual seu limite de gastos mensal\?\s*:\*\s*([\d.,]+)"
 
             match = re.search(padrao, formulario)
 
@@ -29,12 +33,14 @@ class Usuarios:
             sobrenome = match.group(2).strip()
             telefone = numero_telefone
             limite = int(match.group(3))
-            chave_acesso = match.group(4).strip()
             
+            columns = ('nome', 'sobrenome', 'telefone', 'limite')
+            placeholders = ', '.join(['%s'] * len(columns))
+            values = (nome, sobrenome, telefone, limite)
         
-            create_usuario = f"""INSERT INTO usuarios (nome, sobrenome, telefone, limite, senha) VALUES ('{nome}', '{sobrenome}', '{telefone}', {limite}, '{chave_acesso}')"""
+            create_usuario = (f"""INSERT INTO usuarios ({', '.join(columns)}) VALUES ({placeholders})""")
     
-            db.execute_script(create_usuario)
+            db.execute_script(create_usuario, values)
 
             waha.send_message(chatId, 'Seu cadastro foi concluido com sucesso! Agora você pode enviar seus gastos e despesas aqui, assim, irei armazenar todas as informaçoes para você e você terá o controle dos seus gastos de forma muito mais fácil :)')
 
@@ -42,4 +48,5 @@ class Usuarios:
             print(f'Erro ao adicionar informações do usuário')
             print(e)
             waha.send_message(chatId, 'Ocorreu um erro ao cadastrar seu usuário, a equipe técnica irá analisar o ocorrido!')
-            self.define_status(chatId, 'start')
+            bot.define_status(chatId, 'start')
+            return

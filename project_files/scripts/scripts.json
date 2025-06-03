@@ -1,0 +1,440 @@
+{
+    "total_mes_atual": {
+        "query": "SELECT SUM(valor) FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data BETWEEN DATE_TRUNC('month', CURRENT_DATE) AND CURRENT_DATE;",
+        "examples": {
+            "RECEITA": [
+                "Quanto recebi este mês?",
+                "Qual o valor total das minhas receitas esse mês?",
+                "Quanto já recebi esse mês?",
+                "Me mostra o total que recebi este mês.",
+                "Quanto ganhei esse mês",
+                "Quero saber meu total de ganhos esse mês"
+            ],
+            "DESPESA": [
+                "Quanto gastei este mês?",
+                "Qual o valor total dos meus gastos esse mês?",
+                "Quanto já gastei esse mês?",
+                "Me mostra o total que gastei este mês.",
+                "Qual meu total de despesas esses mês",
+                "Quero ver o valor total das minhas despesas esse mês"
+            ]
+        }
+    },
+    "detalhes_entradas_mes_atual": {
+        "query": "SELECT produto, categoria, data, valor, tipo_pagamento, descricao FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND data BETWEEN DATE_TRUNC('month', CURRENT_DATE) AND CURRENT_DATE ORDER BY data;",
+        "examples": {
+            "RECEITA": [
+                "Quais foram minhas receitas este mês?",
+                "Quero ver tudo que recebi esse mês?",
+                "Com o que eu recebi este mês?",
+                "Me mostre as coisas que eu recebi este mês",
+                "Me mostre as receitas deste mês até agora",
+                "Me mostre com o que eu ganhei esse mês",
+                "Me mostre detalhes dos meus ganhos esse mês"
+            ],
+            "DESPESA": [
+                "Quais foram meus gastos este mês?",
+                "Quero ver tudo que gastei esse mês?",
+                "Com o que eu gastei este mês?",
+                "Me mostre as coisas que eu gastei este mês",
+                "Me mostre os gastos deste mês até agora",
+                "Me mostre minhas despesas esse mês",
+                "Me mostre os detalhes das minhas despesas deste mês"
+            ]
+        }
+    },
+    "total_semana_atual": {
+        "query": "SELECT SUM(valor) FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND data BETWEEN DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 day' AND CURRENT_DATE;",
+        "examples": {
+            "RECEITA": [
+                "Quanto recebi esta semana?",
+                "Qual o valor total das minhas receitas essa semana?",
+                "Quanto já recebi essa semana?",
+                "Me mostra o total que recebi esta semana.",
+                "Quanto ganhei essa semana",
+                "Quero saber meu total de ganhos essa semana"
+            ],
+            "DESPESA": [
+                "Quanto gastei esta semana?",
+                "Qual o valor total dos meus gastos essa semana?",
+                "Quanto já gastei essa semana?",
+                "Me mostra o total que gastei esta semana.",
+                "Qual meu total de despesas essa semana",
+                "Quero ver o valor total das minhas despesas essa semana"
+            ]
+        }
+    },
+    "detalhes_entradas_semana_atual": {
+        "query": "SELECT produto, categoria, data, valor, tipo_pagamento, descricao FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND data BETWEEN DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 day' AND CURRENT_DATE ORDER BY data;",
+        "examples": {
+            "RECEITA": [
+                "Quais foram minhas receitas essa semana?",
+                "Quero ver tudo que recebi essa semana?",
+                "O que eu recebi essa semana?",
+                "Me mostre as coisas que eu recebi essa semana",
+                "Me mostre as receitas desta semana até agora",
+                "Me mostre com o que eu ganhei essa semana",
+                "Me mostre detalhes dos meus ganhos essa semana"
+            ],
+            "DESPESA": [
+                "Quais foram meus gastos essa semana?",
+                "Quero ver tudo que gastei essa semana?",
+                "Com o que eu gastei essa semana?",
+                "Me mostre as coisas que eu gastei essa semana",
+                "Me mostre os gastos desta semana até agora",
+                "Me mostre minhas despesas essa semana",
+                "Me mostre os detalhes das minhas despesas dessa semana"
+            ]
+        }
+    },
+    "total_primeira_quinzena": {
+        "query": "SELECT SUM(valor) FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data >= DATE_TRUNC('month', CURRENT_DATE) AND en.data < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '15 days';",
+        "examples": {
+            "RECEITA": [
+                "Quanto recebi na primeira quinzena do mês?",
+                "Qual o valor total das minhas receitas na primeira quinzena do mês?",
+                "Quanto já recebi na primeira quinzena do mês?",
+                "Me mostra o total que recebi na primeira quinzena do mês.",
+                "Quanto ganhei na primeira quinzena do mês",
+                "Quero saber meu total de ganhos na primeira quinzena do mês"
+            ],
+            "DESPESA": [
+                "Quanto gastei na primeira quinzena do mês?",
+                "Qual o valor total dos meus gastos na primeira quinzena do mês?",
+                "Quanto já gastei na primeira quinzena do mês?",
+                "Me mostra o total que gastei na primeira quinzena do mês.",
+                "Qual meu total de despesas na primeira quinzena do mês",
+                "Quero ver o valor total das minhas na primeira quinzena do mês"
+            ]
+        }
+    },
+    "detalhes_entradas_primeira_quinzena": {
+        "query": "SELECT produto, categoria, data, valor, tipo_pagamento, descricao FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data >= DATE_TRUNC('month', CURRENT_DATE) AND en.data < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '15 days' ORDER BY data;",
+        "examples": {
+            "RECEITA": [
+                "Quais foram minhas receitas na primeira quinzena do mês?",
+                "Quero ver tudo que recebi na primeira quinzena do mês?",
+                "O que eu recebi na primeira quinzena do mês?",
+                "Me mostre as coisas que eu recebi na primeira quinzena do mês",
+                "Me mostre com o que eu ganhei na primeira quinzena do mês",
+                "Me mostre detalhes dos meus ganhos na primeira quinzena do mês"
+            ],
+            "DESPESA": [
+                "Quais foram meus gastos na primeira quinzena do mês?",
+                "Quero ver tudo que gastei na primeira quinzena do mês?",
+                "Com o que eu gastei na primeira quinzena do mês?",
+                "Me mostre as coisas que eu gastei na primeira quinzena do mês",
+                "Me mostre minhas despesas na primeira quinzena do mês",
+                "Me mostre os detalhes das minhas despesas da primeira quinzena do mÊs"
+            ]
+        }
+    },
+    "total_segunda_quinzena": {
+        "query": "SELECT SUM(valor) FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data >= DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '15 days' AND en.data < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '30 days';",
+        "examples": {
+            "RECEITA": [
+                "Quanto recebi na segunda quinzena do mês?",
+                "Qual o valor total das minhas receitas na segunda quinzena do mês?",
+                "Quanto já recebi na segunda quinzena do mês?",
+                "Me mostra o total que recebi na segunda quinzena do mês.",
+                "Quanto ganhei na segunda quinzena do mês",
+                "Quero saber meu total de ganhos na segunda quinzena do mês"
+            ],
+            "DESPESA": [
+                "Quanto gastei na segunda quinzena do mês?",
+                "Qual o valor total dos meus gastos na segunda quinzena do mês?",
+                "Quanto já gastei na segunda quinzena do mês?",
+                "Me mostra o total que gastei na segunda quinzena do mês.",
+                "Qual meu total de despesas na segunda quinzena do mês",
+                "Quero ver o valor total das minhas despesas na segunda quinzena do mês"
+            ]
+        }
+    },
+    "detalhes_entradas_segunda_quinzena": {
+        "query": "SELECT produto, categoria, data, valor, tipo_pagamento, descricao FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data >= DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '15 days' AND en.data < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '30 days' ORDER BY data;",
+        "examples": {
+            "RECEITA": [
+                "Quais foram minhas receitas na segunda quinzena do mês?",
+                "Quero ver tudo que recebi na segunda quinzena do mês?",
+                "Oque eu recebi na segunda quinzena do mês?",
+                "Me mostre as coisas que eu recebi na segunda quinzena do mês",
+                "Me mostre com o que eu ganhei na segunda quinzena do mês",
+                "Me mostre detalhes dos meus ganhos na segunda quinzena do mês"
+                
+            ],
+            "DESPESA": [
+                "Quais foram meus gastos na segunda quinzena do mês?",
+                "Quero ver tudo que gastei na segunda quinzena do mês?",
+                "Com o que eu gastei na segunda quinzena do mês?",
+                "Me mostre as coisas que eu gastei na segunda quinzena do mês",
+                "Me mostre minhas despesas na segunda quinzena do mês",
+                "Me mostre os detalhes das minhas despesas da segunda quinzena do mÊs"
+            ]
+        }
+    },
+    "total_ano_atual": {
+        "query": "SELECT SUM(valor) FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data BETWEEN DATE_TRUNC('year', CURRENT_DATE) AND CURRENT_DATE;",
+        "examples":{
+            "RECEITA": [
+                "Quanto recebi este ano?",
+                "Qual o valor total das minhas receitas este ano?",
+                "Quanto já recebi este ano?",
+                "Me mostra o total que recebi este ano.",
+                "Quanto ganhei esse ano",
+                "Quero saber meu total de ganhos esse ano"
+            ],
+            "DESPESA": [
+                "Quanto gastei este ano?",
+                "Qual o valor total dos meus gastos este ano?",
+                "Quanto já gastei este ano?",
+                "Me mostra o total que gastei este ano.",
+                "Qual meu total de despesas esse ano",
+                "Quero ver o valor total das minhas despesas esse ano"
+            ]
+        }
+    },
+    "detalhes_entradas_ano_atual": {
+        "query": "SELECT produto, categoria, data, valor, tipo_pagamento, descricao FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data BETWEEN DATE_TRUNC('year', CURRENT_DATE) AND CURRENT_DATE ORDER BY data;",
+        "examples": {
+            "RECEITA": [
+                "Quais foram minhas receitas esse ano?",
+                "Quero ver tudo que recebi esse ano?",
+                "Com o que eu recebi esse ano?",
+                "Me mostre as coisas que eu recebi esse ano",
+                "Me mostre as receitas deste ano até agora",
+                "Me mostre com o que eu ganhei esse ano ",
+                "Me mostre detalhes dos meus ganhos esse ano "
+            ],
+            "DESPESA": [
+                "Quais foram meus gastos esse ano?",
+                "Quero ver tudo que gastei esse ano?",
+                "Com o que eu gastei esse ano?",
+                "Me mostre as coisas que eu gastei esse ano",
+                "Me mostre os gastos deste ano até agora",
+                "Me mostre minhas despesas esse ano",
+                "Me mostre os detalhes das minhas despesas desse ano"
+            ]
+        }
+    },
+    "total_ano_passado": {
+        "query": "SELECT SUM(valor) FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND EXTRACT(YEAR FROM en.data) = EXTRACT(YEAR FROM CURRENT_DATE) - 1;",
+        "examples":{
+            "RECEITA": [
+                "Quanto recebi ano passado?",
+                "Qual o valor total das minhas receitas ano passado?",
+                "Quanto já recebi ano passado?",
+                "Me mostra o total que recebi ano passado.",
+                "Quanto ganhei ano passado",
+                "Quero saber meu total de ganhos ano passado"
+            ],
+            "DESPESA": [
+                "Quanto gastei ano passado?",
+                "Qual o valor total dos meus gastos ano passado?",
+                "Quanto já gastei ano passado?",
+                "Me mostra o total que gastei ano passado.",
+                "Qual meu total de despesas ano passado",
+                "Quero ver o valor total das minhas despesas ano passado"
+            ]
+        }
+    },
+    "detalhes_entrada_ano_passado": {
+        "query": "SELECT produto, categoria, data, valor, tipo_pagamento, descricao FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND EXTRACT(YEAR FROM en.data) = EXTRACT(YEAR FROM CURRENT_DATE) - 1 ORDER BY data;",
+        "examples":{
+            "RECEITA": [
+                "Quais foram minhas receitas ano passado?",
+                "Quero ver tudo que recebi ano passado?",
+                "Com o que eu recebi ano passado?",
+                "Me mostre as coisas que eu recebi ano passado",
+                "Me mostre as receitas do ano passado",
+                "Me mostre com o que eu ganhei ano passado ",
+                "Me mostre detalhes dos meus ganhos ano passado "
+            ],
+            "DESPESA": [
+                "Quais foram meus gastos ano passado?",
+                "Quero ver tudo que gastei ano passado?",
+                "Com o que eu gastei ano passado?",
+                "Me mostre as coisas que eu gastei ano passado",
+                "Me mostre os gastos do ano passado",
+                "Me mostre minhas despesas do ano passado",
+                "Me mostre os detalhes das minhas despesas do ano passado"
+            ]
+        }
+    },
+    "total_mes_passado": {
+        "query": "SELECT SUM(valor) FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND EXTRACT(MONTH FROM en.data) = EXTRACT(MONTH FROM CURRENT_DATE) - 1;",
+        "examples":{
+            "RECEITA": [
+                "Quanto recebi mês passado?",
+                "Qual o valor total das minhas receitas mês passado?",
+                "Quanto já recebi mês passado?",
+                "Me mostra o total que recebi mês passado.",
+                "Quanto ganhei mês passado",
+                "Quero saber meu total de ganhos mês passado"
+            ],
+            "DESPESA": [
+                "Quanto gastei mês passado?",
+                "Qual o valor total dos meus gastos mês passado?",
+                "Quanto já gastei mês passado?",
+                "Me mostra o total que gastei mês passado.",
+                "Qual meu total de despesas mês passado",
+                "Quero ver o valor total das minhas despesas ano passado"
+            ]
+        }
+    },
+    "detalhes_entrada_mes_passado": {
+        "query": "SELECT produto, categoria, data, valor, tipo_pagamento, descricao FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND EXTRACT(MONTH FROM en.data) = EXTRACT(MONTH FROM CURRENT_DATE) - 1 ORDER BY data;",
+        "examples":{
+            "RECEITA": [
+                "Quais foram minhas receitas mes passado?",
+                "Quero ver tudo que recebi mes passado?",
+                "Com o que eu recebi mes passado?",
+                "Me mostre as coisas que eu recebi mes passado",
+                "Me mostre as receitas do mes passado",
+                "Me mostre com o que eu ganhei mês passado ",
+                "Me mostre detalhes dos meus ganhos mês passado "
+            ],
+            "DESPESA": [
+                "Quais foram meus gastos mes passado?",
+                "Quero ver tudo que gastei mes passado?",
+                "Com o que eu gastei mes passado?",
+                "Me mostre as coisas que eu gastei mes passado",
+                "Me mostre os gastos do mes passado",
+                "Me mostre minhas despesas do mês passado",
+                "Me mostre os detalhes das minhas despesas do mês passado"
+            ]
+        }
+    },
+    "total_semana_passada": {
+        "query": "SELECT SUM(valor) FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data BETWEEN date_trunc('week', CURRENT_DATE) - INTERVAL '7 days' AND date_trunc('week', CURRENT_DATE) - INTERVAL '1 day';",
+        "examples":{
+            "RECEITA": [
+                "Quanto recebi semana passada?",
+                "Qual o valor total das minhas receitas semana passada?",
+                "Quanto já recebi semana passada?",
+                "Me mostra o total que recebi semana passada.",
+                "Quanto ganhei semana passada",
+                "Quero saber meu total de ganhos semana passada"
+            ],
+            "DESPESA": [
+                "Quanto gastei semana passada?",
+                "Qual o valor total dos meus gastos semana passada?",
+                "Quanto já gastei semana passada?",
+                "Me mostra o total que gastei semana passada.",
+                "Qual meu total de despesas semana passada",
+                "Quero ver o valor total das minhas despesas semana passada"
+            ]
+        }
+    },
+    "detalhes_entrada_semana_passada": {
+        "query": "SELECT produto, categoria, data, valor, tipo_pagamento, descricao FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data BETWEEN date_trunc('week', CURRENT_DATE) - INTERVAL '7 days' AND date_trunc('week', CURRENT_DATE) - INTERVAL '1 day' ORDER BY data;",
+        "examples":{
+            "RECEITA": [
+                "Quais foram minhas receitas semana passada?",
+                "Quero ver tudo que recebi semana passada?",
+                "Com o que eu recebi semana passada?",
+                "Me mostre as coisas que eu recebi semana passada",
+                "Me mostre as receitas da semana passada",
+                "Me mostre com o que eu ganhei semana passada ",
+                "Me mostre detalhes dos meus ganhos da semana passada "
+            ],
+            "DESPESA": [
+                "Quais foram meus gastos semana passada?",
+                "Quero ver tudo que gastei semana passada?",
+                "Com o que eu gastei semana passada?",
+                "Me mostre as coisas que eu gastei semana passada",
+                "Me mostre os gastos da semana passada",
+                "Me mostre minhas despesas da semana passada ",
+                "Me mostre detalhes das minhas despesas da semana passada "
+            ]
+        }
+    },
+    "total_ontem": {
+        "query": "SELECT SUM(valor) FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data = CURRENT_DATE - INTERVAL '1 day';",
+        "examples":{
+            "RECEITA": [
+                "Quanto recebi ontem?",
+                "Qual o valor total das minhas receitas de ontem?",
+                "Quanto já recebi ontem?",
+                "Me mostra o total que recebi ontem.",
+                "Quanto ganhei ontem",
+                "Quero saber meu total de ganhos ontem"
+            ],
+            "DESPESA": [
+                "Quanto gastei ontem?",
+                "Qual o valor total dos meus gastos ontem?",
+                "Quanto já gastei ontem?",
+                "Me mostra o total que gastei ontem.",
+                "Qual meu total de despesas ontem",
+                "Quero ver o valor total das minhas despesas ontem"
+            ]
+        }
+    },
+    "detalhes_entrada_ontem": {
+        "query": "SELECT produto, categoria, data, valor, tipo_pagamento, descricao FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data = CURRENT_DATE - INTERVAL '1 day' ORDER BY data;",
+        "examples":{
+            "RECEITA": [
+                "Quais foram minhas receitas de ontem?",
+                "Quero ver tudo que recebi ontem?",
+                "Com o que eu recebi ontem?",
+                "Me mostre as coisas que eu recebi ontem",
+                "Me mostre as receitas de ontem",
+                "Me mostre com o que eu ganhei ontem",
+                "Me mostre detalhes dos meus ganhos de ontem"
+            ],
+            "DESPESA": [
+                "Quais foram meus gastos de ontem?",
+                "Quero ver tudo que gastei ontem?",
+                "Com o que eu gastei ontem?",
+                "Me mostre as coisas que eu gastei ontem",
+                "Me mostre os gastos de ontem",
+                "Me mostre minhas despesas de ontem",
+                "Me mostre os detalhes das minhas despesas de ontem"
+            ]
+        }
+    },
+    "total_hoje":{
+        "query": "SELECT SUM(valor) FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data = CURRENT_DATE;",
+        "examples":{
+            "RECEITA": [
+                "Quanto recebi hoje?",
+                "Qual o valor total das minhas receitas de hoje?",
+                "Quanto já recebi hoje?",
+                "Me mostra o total que recebi hoje.",
+                "Quanto ganhei hoje",
+                "Quero saber meu total de ganhos hoje"
+            ],
+            "DESPESA": [
+                "Quanto gastei hoje?",
+                "Qual o valor total dos meus gastos hoje?",
+                "Quanto já gastei hoje?",
+                "Me mostra o total que gastei hoje.",
+                "Qual meu total de despesas hoje",
+                "Quero ver o valor total das minhas despesas hoje"
+            ]
+        }
+    },
+    "detalhes_entrada_hoje": {
+        "query": "SELECT produto, categoria, data, valor, tipo_pagamento, descricao FROM entradas en JOIN extratos ex ON ex.id = en.extrato_id JOIN usuarios u ON u.id = ex.usuario_id WHERE u.telefone = %s AND en.tipo = %s AND en.data = CURRENT_DATE ORDER BY data;",
+        "examples":{
+            "RECEITA": [
+                "Quais foram minhas receitas de hoje?",
+                "Quero ver tudo que recebi hoje?",
+                "Com o que eu recebi hoje?",
+                "Me mostre as coisas que eu recebi hoje",
+                "Me mostre as receitas de hoje",
+                "Me mostre com o que eu ganhei hoje",
+                "Me mostre detalhes dos meus ganhos de hoje"
+            ],
+            "DESPESA": [
+                "Quais foram meus gastos de hoje?",
+                "Quero ver tudo que gastei hoje?",
+                "Com o que eu gastei hoje?",
+                "Me mostre as coisas que eu gastei hoje",
+                "Me mostre os gastos de hoje",
+                "Me mostre minhas despesas de hoje",
+                "Me mostre os detalhes das minhas despesas de hoje"
+            ]
+        }
+    }
+}
+
