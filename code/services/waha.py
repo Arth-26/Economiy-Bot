@@ -20,6 +20,10 @@ class WahaBot:
     """FUNÇÕES DE INICIALIZAÇÃO, EXECUTADAS AO INICIAR O SISTEMA"""
 
     def wait_for_waha(self):
+        '''
+            Função feita para servir como um timeout para a inicialização do sistema waha.
+            Caso não inicializa após algum tempo, encerra a inicialização
+        '''
         waha_url = f"{self.__url}/api/sessions"
 
         for i in range(10):
@@ -36,6 +40,10 @@ class WahaBot:
         return False
     
     def waha_initialize(self):
+        '''
+            Cria e inicializa o webhook da sessão para o funcionamento do sistema
+            Caso o webhook não seja criado corretamente, o sistema não irá funcionar
+        '''
         waha_start_url = f'{self.__url}/api/sessions/default/start'
 
         try:
@@ -53,6 +61,9 @@ class WahaBot:
 
     def create_session_webhook(self):
 
+        '''
+            Cria a sessão do webhook para ativar junto com o app Flask, onde todos os comandos serão executados
+        '''
         if not self.wait_for_waha():
             return 
 
@@ -93,8 +104,15 @@ class WahaBot:
     """FUNÇÕES DE CHAMADA DA API WAHA"""
 
     def send_message(self, chatId, message):
+        ''' 
+            Função para enviar mensagem para o usuário
+            Essa função é a base de todo o sistema, usada para enviar todas as mensagens para o usuário 
+            seguindo o fluxo de funcionamento do sistema
+        '''
 
-        message_length = len(message)
+        # Verifica o tamanho da mensagem que será enviada para definir quando tempo irá demorar para enviar a mensagem
+        # Assim, evita que o bot responda automaticamente e tenha problemas com a plataforma Whatsapp
+        message_length = len(message) 
         sleep_time = 1 if message_length < 50 else 2
         time.sleep(sleep_time)
 

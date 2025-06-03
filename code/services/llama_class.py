@@ -31,11 +31,13 @@ class LlamaClass:
         self.__client = ChatGroq(model='llama-3.3-70b-versatile')
 
     def identificar_funcao(self, text):
+        """
+        Usa uma LLM para identificar se a mensagem é de consulta, cadastro ou irrelevante.
+        """
         client = self.__client
 
         try:
             system_instruction = ler_arquivo('code/prompts/identificar_funcao.txt', 'text')
-
             chain = (
                 PromptTemplate.from_template(
                     '''
@@ -61,6 +63,12 @@ class LlamaClass:
             print(e)
 
     def executa_funcao(self, chatId, text):
+        """
+            Executa uma função com base na intenção identificada:
+            - NOT_FUNCTION: resposta neutra
+            - FIN_FUNCTION: cadastro de entrada
+            - QUERY_FUNCTION: consulta de dados
+        """
         funcao = self.identificar_funcao(text)
         match funcao:
             case 'NOT_FUNCTION':
@@ -71,6 +79,10 @@ class LlamaClass:
                 self.mostra_resultados_consulta_usuario(chatId, text)
 
     def funcao_nao_identificada(self, chatId):
+        """
+        Envia uma mensagem ao usuário se não entender a intenção.
+        """
+
         waha = self.waha
         mensagem = '''Hmm... Não consegui entender se você quer consultar seu extrato ou registrar uma nova transação. 🤔
 
@@ -87,11 +99,16 @@ class LlamaClass:
         waha.send_message(chatId, mensagem)
 
     def gerar_mensagem_cadastro(self, chatId, text):
+        """
+            Usa a LLM para transformar uma frase natural do usuário em uma mensagem estruturada,
+            e envia para a lógica de cadastro (`captura_dados_mensagem`)
+        """
+
         client = self.__client
         api = self.api
         hoje = date.today()
         try:
-            system_instruction = ler_arquivo("code/prompts/gerar_mensagem_cadastro.txt").replace('{{data_hoje}}', hoje)
+            system_instruction = ler_arquivo("code/prompts/gerar_mensagem_cadastro.txt", 'text').replace('{{data_hoje}}', f'{hoje}')
 
             chain = (
                 PromptTemplate.from_template(
@@ -111,6 +128,7 @@ class LlamaClass:
                 'texto': text,
             })
             
+            # Captura os dados do texto estruturado
             api.captura_dados_mensagem(chatId, response)
             
         except Exception as e:
@@ -118,7 +136,11 @@ class LlamaClass:
             print(e)
 
     def selecionar_query_por_similaridade(self, text):
-        consultas = ler_arquivo("../project_files/scripts/banco_vetores", 'json')
+        """
+        Utiliza embeddings para encontrar a consulta SQL mais próxima da intenção do usuário.
+        """
+
+        consultas = ler_arquivo("../project_files/scripts/banco_vetores.json", 'json')
         
         documentos = []
         for consulta, infos in consultas.items():
@@ -137,10 +159,13 @@ class LlamaClass:
                         )  
                     documentos.append(doc) 
 
+        # Carrega modelo de embeddings
         embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
+        # Cria o índice vetorial
         banco_vetores = FAISS.from_documents(documentos, embedding_model)
 
+        # Busca a consulta mais próxima
         resultados = banco_vetores.similarity_search(text, k=1)
 
         if not resultados:
@@ -155,6 +180,11 @@ class LlamaClass:
         }
     
     def processar_consulta_do_usuario(self, chatId, text):
+        """
+        Processa uma consulta identificada via similaridade, executa a query no banco
+        e retorna os resultados brutos.
+        """
+        
         resultado_consulta = self.selecionar_query_por_similaridade(text)
 
         numero_telefone = filtrar_digitos(chatId)
@@ -168,6 +198,10 @@ class LlamaClass:
         return resultados
     
     def mostra_resultados_consulta_usuario(self, chatId, text):
+        """
+            Formata e envia para o usuário os resultados de uma consulta.
+            Agrupa por categoria, soma os valores e detalha os itens.
+        """
         resultados = self.processar_consulta_do_usuario(chatId, text)
         if len(resultados) < 1:
             message = '''Você não possui nenhum registro no período informado!
@@ -197,3 +231,6 @@ class LlamaClass:
                     valor = item[3]
                     forma_pagamento = item[4]
                     message += f'\n- {data}: {produto} - R$ {formatar_valor_brasileiro(valor)} ({forma_pagamento})'
+
+        # Envia a consulta completamente formatada para o usuário
+        self.waha.send_message(chatId, message)
