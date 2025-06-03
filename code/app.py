@@ -3,8 +3,8 @@ import time
 
 from flask import Flask, jsonify, request
 from models.usuarios import Usuarios
-from services.bot_functions import BotClass
-from services.llama_functions import LlamaClass
+from services.bot_class import BotClass
+from services.llama_class import LlamaClass
 from services.waha import WahaBot
 from utils import filtrar_digitos, verificar_tipo_mensagem_recebida
 
@@ -30,10 +30,9 @@ def webhook():
         if timestamp > waha.get_start_time:
             numero_telefone = filtrar_digitos(chat_id)
             message_content = data['payload']['body']
-            #LEMBRAR DE TIRAR ESSA VERIFICAÇÃO
             if verificar_tipo_mensagem_recebida(data) == 'texto':
                 if usuario.verificar_usuario(numero_telefone):
-                    ai_bot.identificar_função(chat_id, message_content)
+                    ai_bot.executa_funcao(chat_id, message_content)
                 else:
                     state = api_class.define_status(chat_id)
                     if state == 'cadastro':

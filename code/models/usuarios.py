@@ -1,7 +1,7 @@
 import re
 
-from services.bot_functions import BotClass
-from services.database_functions import DataBase
+from services.bot_class import BotClass
+from services.database_class import DataBase
 from services.waha import WahaBot
 
 db = DataBase()

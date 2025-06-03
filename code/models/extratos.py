@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from services.database_functions import DataBase
+from services.database_class import DataBase
 from services.waha import WahaBot
 from utils import filtrar_digitos
 

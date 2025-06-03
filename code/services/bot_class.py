@@ -12,7 +12,6 @@ class BotClass:
 
     def __init__(self):
         self.__conversation_state = {}
-        self.__etapas_cadastro = {}
 
     @property
     def get_conversation_state(self):

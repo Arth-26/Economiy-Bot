@@ -1,3 +1,4 @@
+import json
 import re
 
 
@@ -14,3 +15,9 @@ def verificar_tipo_mensagem_recebida(message_data):
 def formatar_valor_brasileiro(valor):
     return f"{valor:,.2f}".replace(",", "v").replace(".", ",").replace("v", ".")
 
+def ler_arquivo(arquivo, type):
+    with open(arquivo, 'r', encoding='utf-8') as f:
+        if type == 'text':
+            arquivo = f.read()
+        else:
+            arquivo = json.load(f)

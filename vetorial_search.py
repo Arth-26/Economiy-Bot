@@ -1,17 +1,17 @@
-import os
 import json
+import os
 
 from decouple import config
-from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.schema import Document
+from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
+from langchain_huggingface import HuggingFaceEmbeddings
 
 os.environ['GROQ_API_KEY'] = config('GROQ_API_KEY')
 
 client = ChatGroq(model='llama-3.3-70b-versatile')
 
-arquivo_json = 'project_files/scripts/scripts.json'
+arquivo_json = 'project_files/scripts/banco_vetores'
 
 with open(arquivo_json, 'r', encoding='utf-8') as f:
     consultas = json.load(f)
